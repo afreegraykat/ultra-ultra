@@ -5,6 +5,7 @@
 # Design: one TensorFold 1.0.x native binary serves BOTH models. Nothing here assumes the maintainer's
 # machine: paths derive from $HOME and the repo, and all memory decisions are made from measured RAM.
 
+[ -n "${BASH_VERSION:-}" ] || { echo "env.sh must be sourced from bash (zsh users: run the bin/*.sh scripts, do not source this)" >&2; return 1 2>/dev/null || exit 1; }
 set -u
 ULTRA_ROOT="${ULTRA_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 [ -f "$ULTRA_ROOT/bin/env.local.sh" ] && . "$ULTRA_ROOT/bin/env.local.sh"
