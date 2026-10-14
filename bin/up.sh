@@ -6,7 +6,7 @@ set -euo pipefail
 [ -x "$TF_BIN" ] || { echo "run bin/setup.sh first" >&2; exit 1; }
 
 floor_gib() {  # TensorFold's own memory floor for a cached repo, in GiB (weights + runtime margin)
-  "$TF_BIN" info "$1" 2>/dev/null | awk '/memory floor/{print int($3)}'
+  local f; f=$("$TF_BIN" info "$1" 2>/dev/null | awk '/memory floor/{print int($3)}'); echo "${f:-0}"
 }
 
 wait_ready() {  # $1 port, $2 pid, $3 label, $4 timeout s
@@ -24,7 +24,7 @@ start_one() {  # $1 label, $2 repo, $3 port, $4 name, rest = serve args
   if [ -f "$pidf" ] && pid_alive "$(cat "$pidf")" && listening "$port"; then
     echo "== $label already up (pid $(cat "$pidf"), :$port)"; return 0
   fi
-  listening "$port" && { echo "== :$port is taken by something this recipe did not start; pick another ${label^^}_PORT" >&2; return 1; }
+  listening "$port" && { echo "== :$port is taken by something this recipe did not start; pick another $(echo "$label" | tr a-z A-Z)_PORT" >&2; return 1; }
   local need=$(( $(floor_gib "$repo") + MIN_FREE_GIB )) have; have=$(free_gib)
   echo "== $label: needs ~${need} GiB free (floor + ${MIN_FREE_GIB} margin), have ${have} GiB"
   [ "$have" -ge "$need" ] || { echo "   refusing to load; free RAM first or lower contexts (docs/memory.md)" >&2; return 1; }

@@ -18,10 +18,10 @@ TF_BIN="${TF_BIN:-$TF_HOME/$TF_VERSION/tensorfold-$TF_VERSION-macos-arm64/bin/te
 # ---- Models (pinned) --------------------------------------------------------------------------------
 # Main agent: Qwen3.8 Flash Next, the MLX 6-bit/group-32 MTP checkpoint 1.0.x qualifies on M5 Ultra.
 MAIN_REPO="${MAIN_REPO:-TensorFold/Qwen3.8-Flash-Next-MLX-6bit-MTP}"
-MAIN_REV="${MAIN_REV:-}"                                       # filled by bin/pin-revisions.sh
+MAIN_REV="${MAIN_REV:-45032a193a5d4126ba8534822cbaf8fb30b3e368}"                                       # filled by bin/pin-revisions.sh
 # Worker pool: Nemotron 3.5 Lightning 30B-A3B, the 1.0.x model with shared-round concurrency on Metal.
 WORKER_REPO="${WORKER_REPO:-TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit}"
-WORKER_REV="${WORKER_REV:-}"
+WORKER_REV="${WORKER_REV:-d9d758fb83953437f7263256b0d96157e2a348b8}"
 HF_HUB_CACHE="${HF_HUB_CACHE:-$HOME/.cache/huggingface/hub}"
 export HF_HUB_CACHE
 

@@ -17,10 +17,47 @@ run at 6-bit instead of 3 bpw, and nothing has to stream from disk.
 
 ## Measured
 
-MEASURED_TABLES
+Run on Apple M5 Ultra, 256 GB, macOS 27.0.1, 2026-10-14T13:54:47Z, by `tests/run-all.sh` after a cold `bin/up.sh` on a machine running nothing else. Raw data in `results/`.
 
-Numbers come from `tests/run-all.sh` on the machine in `results/host.txt`. Re-run it and the table
-regenerates from `results/`.
+```
+host: Apple M5 Ultra, 256 GB, macOS 27.0.1
+tensorfold: tensorfold-native 1.0.11
+hermes: Hermes Agent v0.22.0+119.g0e427d7
+main: TensorFold/Qwen3.8-Flash-Next-MLX-6bit-MTP @ 45032a19  ctx=262144
+worker: TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit @ d9d758fb  ctx=131072 parallel=8
+date: 2026-10-14T13:54:47Z
+```
+
+### Decode, 7K-token prompts with 8 tool schemas, greedy
+
+| scenario | streams | per-stream tok/s | aggregate tok/s (end-to-end) | TTFT p50 s |
+|---|---|---|---|---|
+| worker, main idle | 1 | 388.2 | 191.8 | 0.8 |
+| worker, main idle | 4 | 102.0 | 231.9 | 2.2 |
+| worker, main idle | 8 | 54.3 | 246.4 | 3.8 |
+| main, worker idle | 1 | 122.2 | 56.7 | 3.8 |
+| main WHILE 8 workers run | 1 | 66.3 | 48.1 | 2.3 |
+| 8 workers WHILE main runs | 8 | 52.6 | 179.8 | 7.1 |
+
+free RAM after both-busy: 44 GiB
+
+### Hermes fan-out (one worker per file, sums scored against ground truth from each worker's own session)
+
+| tasks | workers correct | main's final correct | subagent sessions | cross-routed | wall s |
+|---|---|---|---|---|---|
+| 4 | 4/4 | 4/4 | 4 | 0 | 70.3 |
+| 8 | 8/8 | 8/8 | 8 | 0 | 68.9 |
+| 16 | 16/16 | 16/16 | 16 | 0 | 304.4 |
+
+```
+whole  main     finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
+stream main     finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
+```
+```
+whole  worker   finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
+stream worker   finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
+```
+
 
 ## Hardware
 
@@ -64,9 +101,10 @@ the main model, zero cross-routed.
 | component | version |
 |---|---|
 | TensorFold | 1.0.11 native (macOS arm64 release archive) |
-| Hermes Agent | commit `8a1a0cd4b0` (2026-10-11) |
+| Hermes Agent | upstream main commit `0e427d788d` (2026-10-14) |
 | macOS | 27.0.1 |
-| checkpoints | revisions in `results/host.txt` (from `bin/pin-revisions.sh`) |
+| main checkpoint | `TensorFold/Qwen3.8-Flash-Next-MLX-6bit-MTP` @ `45032a193a5d4126ba8534822cbaf8fb30b3e368` |
+| worker checkpoint | `TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit` @ `d9d758fb83953437f7263256b0d96157e2a348b8` |
 
 ## Why these choices
 
@@ -89,7 +127,12 @@ the main model, zero cross-routed.
   6-bit checkpoint. `MAIN_PROMPT_CACHE_GIB` plus `--prompt-cache-over-cap` in `MAIN_EXTRA_ARGS` lifts
   it; read `docs/memory.md` before you do.
 - Workers are text-only. Vision workers wait on a Mac engine for a vision model.
-- Hermes needs its own install; this recipe does not install Hermes for you.
+- Hermes needs its own install; this recipe does not install Hermes for you. The install used here:
+  `curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --hermes-home ~/.hermes-ultra --commit 0e427d788d --non-interactive --skip-browser --skip-computer-use`
+  then `HERMES_HOME=~/.hermes-ultra hermes pm repair` if it reports no committed dependency environment.
+- The 16-task run is slower per task than 8 because Hermes caps concurrent children at 8
+  (`delegation.max_concurrent_children`); the second eight queue. Memory, not the cap, is the real limit: raise it in
+  `hermes/config.yaml` and `WORKER_PARALLEL` together.
 
 ## Credits
 

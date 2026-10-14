@@ -4,7 +4,7 @@ set -uo pipefail
 . "$(dirname "$0")/../bin/env.sh"
 R="$ULTRA_ROOT/results"; mkdir -p "$R"; T="$ULTRA_ROOT/tests"
 { echo "host: $(sysctl -n machdep.cpu.brand_string), $(ram_gib) GB, macOS $(sw_vers -productVersion)"
-  echo "tensorfold: $("$TF_BIN" --version)"; echo "hermes: $(HERMES_HOME=$ULTRA_HERMES_HOME hermes --version 2>/dev/null | head -1)"
+  echo "tensorfold: $("$TF_BIN" --version)"; echo "hermes: $(PATH=$HOME/.local/bin:$PATH HERMES_HOME=$ULTRA_HERMES_HOME hermes --version 2>/dev/null | head -1)"
   echo "main: $MAIN_REPO @ ${MAIN_REV:-unpinned}  ctx=$MAIN_CONTEXT"; echo "worker: $WORKER_REPO @ ${WORKER_REV:-unpinned}  ctx=$WORKER_CONTEXT parallel=$WORKER_PARALLEL"
   echo "date: $(date -u +%FT%TZ)"; } >"$R/host.txt"; cat "$R/host.txt"
 M="http://$BIND_HOST:$MAIN_PORT/v1"; W="http://$BIND_HOST:$WORKER_PORT/v1"

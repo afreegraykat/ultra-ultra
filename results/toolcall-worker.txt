@@ -1,0 +1,2 @@
+whole  worker   finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
+stream worker   finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok

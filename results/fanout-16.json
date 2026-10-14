@@ -1,0 +1,18 @@
+{
+ "n": 16,
+ "wall_s": 304.4,
+ "exit": 0,
+ "workers_correct": 16,
+ "final_correct": 16,
+ "parent_sessions": 1,
+ "subagent_sessions": 16,
+ "parent_models": [
+  "main"
+ ],
+ "subagent_models": [
+  "worker"
+ ],
+ "cross_routed": 0,
+ "worker_tool_calls": 164,
+ "stderr_tail": ""
+}

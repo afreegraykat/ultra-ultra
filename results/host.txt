@@ -1,0 +1,6 @@
+host: Apple M5 Ultra, 256 GB, macOS 27.0.1
+tensorfold: tensorfold-native 1.0.11
+hermes: Hermes Agent v0.22.0+119.g0e427d7 (2026.9.24) · local 0e427d788d25
+main: TensorFold/Qwen3.8-Flash-Next-MLX-6bit-MTP @ 45032a193a5d4126ba8534822cbaf8fb30b3e368  ctx=262144
+worker: TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit @ d9d758fb83953437f7263256b0d96157e2a348b8  ctx=131072 parallel=8
+date: 2026-10-14T13:54:47Z

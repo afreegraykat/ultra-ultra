@@ -16,8 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 def env():
-    out = subprocess.run(["bash", "-c", f". {ROOT}/bin/env.sh; env"], capture_output=True, text=True).stdout
-    return dict(l.split("=", 1) for l in out.splitlines() if "=" in l)
+    out = subprocess.run(["bash", "-c", f". {ROOT}/bin/env.sh; set | grep -E '^[A-Z_]+='"], capture_output=True, text=True).stdout
+    return {k: v.strip("'") for k, v in (l.split("=", 1) for l in out.splitlines() if "=" in l)}
 
 def make_files(n, d):
     d.mkdir(parents=True, exist_ok=True)
@@ -54,9 +54,10 @@ def main():
     # main's assembled answer
     final = {}
     for line in text.splitlines():
-        if line.strip().startswith("FINAL:") and "=" in line:
+        if "FINAL:" in line and "=" in line:
             k, v = line.split("FINAL:", 1)[1].split("=", 1)
-            try: final[k.strip()] = int(v.strip().replace(",", ""))
+            k = k.strip().strip("*`").strip(); v = v.strip().strip("*`").strip().replace(",", "")
+            try: final[k] = int(v)
             except ValueError: pass
     # sessions created by this run
     con = sqlite3.connect(db)
@@ -71,7 +72,8 @@ def main():
             for line in m[0].splitlines():
                 if "RESULT:" in line and "=" in line:
                     k, v = line.split("RESULT:", 1)[1].split("=", 1)
-                    try: kid_results[k.strip()] = int(v.strip().replace(",", ""))
+                    k = k.strip().strip("*`").strip(); v = v.strip().strip("*`").strip().replace(",", "")
+                    try: kid_results[k] = int(v)
                     except ValueError: pass
     kid_correct = sum(1 for p, s in truth.items() if kid_results.get(p) == s)
     final_correct = sum(1 for p, s in truth.items() if final.get(p) == s)
