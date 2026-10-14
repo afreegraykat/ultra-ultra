@@ -22,9 +22,16 @@ while true; do
   if ! bash "$ROOT/bin/up.sh" >>"$LOG" 2>&1; then log "up.sh failed; retry in 30s"; sleep 30; continue; fi
   bash "$ROOT/bin/guard.sh" >>"$LOG" 2>&1 & guard_pid=$!
   . "$ROOT/bin/env.sh"
-  main_pid=$(cut -d' ' -f1 "$STATE_DIR/main.pid" 2>/dev/null)
-  # wait until main exits or a hold appears
-  while kill -0 "$main_pid" 2>/dev/null && [ ! -f "$LANE/ultra.hold" ]; do sleep 10; done
-  if [ -f "$LANE/ultra.hold" ]; then continue; fi
-  log "main pid $main_pid exited; restarting stack in 10s"; stop_all; sleep 10
+  # Babysit both servers. up.sh is idempotent: it restarts only what is down (memory-gated).
+  while [ ! -f "$LANE/ultra.hold" ]; do
+    sleep 10
+    for lbl in main worker; do
+      pid=$(cut -d' ' -f1 "$STATE_DIR/$lbl.pid" 2>/dev/null)
+      if ! kill -0 "${pid:-0}" 2>/dev/null; then
+        log "$lbl pid ${pid:-?} exited; up.sh"
+        bash "$ROOT/bin/up.sh" >>"$LOG" 2>&1 || { log "up.sh failed; retry in 30s"; sleep 30; }
+      fi
+    done
+  done
+  [ -n "$guard_pid" ] && kill "$guard_pid" 2>/dev/null; guard_pid=
 done

@@ -29,8 +29,10 @@ start_one() {  # $1 label, $2 repo, $3 port, $4 name, rest = serve args
   echo "== $label: needs ~${need} GiB free (floor + ${MIN_FREE_GIB} margin), have ${have} GiB"
   [ "$have" -ge "$need" ] || { echo "   refusing to load; free RAM first or lower contexts (docs/memory.md)" >&2; return 1; }
   echo "   $TF_BIN serve $repo --host $BIND_HOST --port $port --name $name $*" | tee -a "$LOG_DIR/$label.log"
-  nohup "$TF_BIN" serve "$repo" --host "$BIND_HOST" --port "$port" --name "$name" --backend mlx --no-update-check "$@" \
-    >>"$LOG_DIR/$label.log" 2>&1 &
+  # No nohup: it fails under launchd ("can't detach from console"). A subshell with stdin from /dev/null,
+  # SIGHUP ignored, and its own process group is detached enough for both a terminal and a daemon.
+  ( trap '' HUP; cd /; exec "$TF_BIN" serve "$repo" --host "$BIND_HOST" --port "$port" --name "$name" --backend mlx --no-update-check "$@" ) \
+    </dev/null >>"$LOG_DIR/$label.log" 2>&1 &
   echo $! >"$pidf"; date +%s >"$STATE_DIR/$label.started"
   wait_ready "$port" "$(cat "$pidf")" "$label" 600
   echo "   $label ready at http://$BIND_HOST:$port/v1 ($(grep -o 'loaded in [0-9.]*s' "$LOG_DIR/$label.log" | tail -1))"

@@ -3,7 +3,8 @@
 MAIN_PORT=11504
 MAIN_NAME=flashnext
 WORKER_PORT=11505
-WORKER_NAME=worker
+# Exact served id: the PR-swarm gate (agent-ops gn100_models_check) pins this string.
+WORKER_NAME=nemotron35-lightning-30b-a3b-mlx4
 MAIN_CONTEXT=262144
 MAIN_THINKING_BUDGET=8192
 WORKER_CONTEXT=131072
