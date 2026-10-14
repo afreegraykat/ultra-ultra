@@ -1,0 +1,6 @@
+.state/
+logs/
+bin/env.local.sh
+scratch/
+*.pyc
+__pycache__/

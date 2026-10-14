@@ -1,0 +1,63 @@
+# ultra-ultra Hermes profile. Installed into $ULTRA_HERMES_HOME by hermes/install.sh, which rewrites the
+# two URLs from bin/env.sh. Never copied into ~/.hermes.
+#
+# Main agent  -> Qwen3.8 Flash Next on TensorFold 1.0.x native (one active reply, greedy).
+# Subagents   -> Nemotron 3.5 Lightning worker pool (8 shared-round streams).
+
+model:
+  provider: ultra-main
+  default: main
+
+providers:
+  ultra-main:
+    name: "ultra-ultra main: Qwen3.8 Flash Next 6-bit MTP (TensorFold 1.0.x native)"
+    api: http://127.0.0.1:11520/v1
+    default_model: main
+    discover_models: false
+    request_timeout_seconds: 1800
+    stale_timeout_seconds: 1800
+    models:
+      main:
+        context_length: 262144
+        timeout_seconds: 1800
+        stale_timeout_seconds: 1800
+  ultra-worker:
+    name: "ultra-ultra worker: Nemotron 3.5 Lightning 30B-A3B 4-bit (8 shared-round streams)"
+    api: http://127.0.0.1:11521/v1
+    default_model: worker
+    discover_models: false
+    request_timeout_seconds: 1800
+    stale_timeout_seconds: 1800
+    models:
+      worker:
+        context_length: 131072
+        timeout_seconds: 1800
+        stale_timeout_seconds: 1800
+
+delegation:
+  # Direct endpoint: every child goes to the worker server, never to the main one.
+  model: worker
+  provider: ""
+  base_url: http://127.0.0.1:11521/v1
+  api_key: local-no-auth
+  api_mode: chat_completions
+  max_concurrent_children: 8      # = WORKER_PARALLEL; more than this queues inside Hermes
+  oneshot_max_children: 0         # unlimited children per one-shot session (tests use `hermes chat -q`)
+  max_spawn_depth: 1
+  max_iterations: 60
+  child_timeout_seconds: 1800
+  inherit_mcp_toolsets: true
+  worktree_isolation: true        # each child works in its own git worktree when the cwd is a repo
+  subagent_auto_approve: false
+  orchestrator_enabled: true
+
+# Keep the main conversation lean: the main server serves one reply at a time, so background work
+# that would compete with the user's turn is routed to the workers by the delegation block above.
+compression:
+  enabled: true
+
+memory:
+  provider: none                  # recipe stays self-contained; add your own memory backend if you want one
+
+terminal:
+  backend: local
