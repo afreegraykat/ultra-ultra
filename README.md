@@ -17,7 +17,7 @@ run at 6-bit instead of 3 bpw, and nothing has to stream from disk.
 
 ## Measured
 
-Run on Apple M5 Ultra, 256 GB, macOS 27.0.1, 2026-10-14T13:54:47Z, by `tests/run-all.sh` after a cold `bin/up.sh` on a machine running nothing else. Raw data in `results/`.
+Run on Apple M5 Ultra, 256 GB, macOS 27.0.1, 2026-10-14, by `tests/run-all.sh` after a cold `bin/up.sh` on a machine running nothing else. Raw data in `results/`. Free RAM never dropped below 40 GiB in any test, including 64K prompts on both servers at once.
 
 ```
 host: Apple M5 Ultra, 256 GB, macOS 27.0.1
@@ -41,6 +41,15 @@ date: 2026-10-14T13:54:47Z
 
 free RAM after both-busy: 44 GiB
 
+### Long context (needle retrieval, greedy, thinking off)
+
+| scenario | prompt tokens | found | TTFT s |
+|---|---|---|---|
+| worker-128k-main-idle | 128582 | yes | 26.8 |
+| main-128k-worker-idle | 104472 | yes | 43.2 |
+| main-64k-WHILE-worker-64k | 51913 | yes | 18.7 |
+| worker-64k-WHILE-main-64k | 63909 | yes | 23.0 |
+
 ### Hermes fan-out (one worker per file, sums scored against ground truth from each worker's own session)
 
 | tasks | workers correct | main's final correct | subagent sessions | cross-routed | wall s |
@@ -53,11 +62,11 @@ free RAM after both-busy: 44 GiB
 whole  main     finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
 stream main     finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
 ```
+
 ```
 whole  worker   finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
 stream worker   finish=tool_calls call={'name': 'list_dir', 'arguments': '{"path":"/tmp"}'} -> ok
 ```
-
 
 ## Hardware
 
@@ -133,6 +142,11 @@ the main model, zero cross-routed.
 - The 16-task run is slower per task than 8 because Hermes caps concurrent children at 8
   (`delegation.max_concurrent_children`); the second eight queue. Memory, not the cap, is the real limit: raise it in
   `hermes/config.yaml` and `WORKER_PARALLEL` together.
+
+## Running it as a lane
+
+`overlay/` is one operator's production wiring: a LaunchDaemon, a hold file, the memory guard, and a
+port/name mapping that keeps existing clients unchanged. Not needed to use the recipe; there as an example.
 
 ## Credits
 

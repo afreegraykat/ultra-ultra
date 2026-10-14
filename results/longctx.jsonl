@@ -1,0 +1,4 @@
+{"tag": "worker-128k-main-idle", "model": "worker", "requested_tokens": 145000, "prompt_tokens_srv": 128582, "found": true, "answer": "ZK-79415", "ttft_s": 26.8, "wall_s": 26.8}
+{"tag": "main-128k-worker-idle", "model": "main", "requested_tokens": 145000, "prompt_tokens_srv": 104472, "found": true, "answer": "ZK-79415", "ttft_s": 43.2, "wall_s": 43.5}
+{"tag": "main-64k-WHILE-worker-64k", "model": "main", "requested_tokens": 72000, "prompt_tokens_srv": 51913, "found": true, "answer": "ZK-66312", "ttft_s": 18.7, "wall_s": 19.0}
+{"tag": "worker-64k-WHILE-main-64k", "model": "worker", "requested_tokens": 72000, "prompt_tokens_srv": 63909, "found": true, "answer": "ZK-66312", "ttft_s": 23.0, "wall_s": 23.0}

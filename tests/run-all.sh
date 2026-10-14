@@ -14,5 +14,12 @@ echo "== worker alone"; for c in 1 4 8; do python3 "$T/bench.py" "$W" "$WORKER_N
 echo "== main alone";   python3 "$T/bench.py" "$M" "$MAIN_NAME" 1 --max-tokens 400 --tag main-solo-worker-idle >>"$R/bench.jsonl"
 echo "== both busy";    ( python3 "$T/bench.py" "$M" "$MAIN_NAME" 1 --max-tokens 400 --tag main-WHILE-worker-c8 >>"$R/bench.jsonl" ) & ( python3 "$T/bench.py" "$W" "$WORKER_NAME" 8 --tag worker-c8-WHILE-main >>"$R/bench.jsonl" ) & wait
 echo "   free RAM after both-busy: $(free_gib) GiB" | tee "$R/memory-floor.txt"
+echo "== long context (needle at ~128K each alone, then 64K on both at once)"
+: > "$R/longctx.jsonl"
+python3 "$T/longctx.py" "$W" "$WORKER_NAME" 145000 --tag worker-128k-main-idle >> "$R/longctx.jsonl"
+python3 "$T/longctx.py" "$M" "$MAIN_NAME" 145000 --tag main-128k-worker-idle >> "$R/longctx.jsonl"
+( python3 "$T/longctx.py" "$M" "$MAIN_NAME" 72000 --tag main-64k-WHILE-worker-64k >> "$R/longctx.jsonl" ) &
+( python3 "$T/longctx.py" "$W" "$WORKER_NAME" 72000 --tag worker-64k-WHILE-main-64k >> "$R/longctx.jsonl" ) &
+wait
 echo "== hermes fan-out"; for n in 4 8 16; do python3 "$T/fanout.py" "$n" --out "$R/fanout-$n.json" || echo "   fanout $n FAILED"; done
 echo "== summary"; python3 "$T/summarize.py" "$R" | tee "$R/summary.md"

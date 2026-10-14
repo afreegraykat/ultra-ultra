@@ -11,6 +11,15 @@
 
 free RAM after both-busy: 44 GiB
 
+### Long context (needle retrieval, greedy, thinking off)
+
+| scenario | prompt tokens | found | TTFT s |
+|---|---|---|---|
+| worker-128k-main-idle | 128582 | yes | 26.8 |
+| main-128k-worker-idle | 104472 | yes | 43.2 |
+| main-64k-WHILE-worker-64k | 51913 | yes | 18.7 |
+| worker-64k-WHILE-main-64k | 63909 | yes | 23.0 |
+
 ### Hermes fan-out (one worker per file, sums scored against ground truth from each worker's own session)
 
 | tasks | workers correct | main's final correct | subagent sessions | cross-routed | wall s |

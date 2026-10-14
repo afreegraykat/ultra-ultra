@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.aubrey.studio-ultra</string>
+  <key>UserName</key><string>aubrey</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>/Users/aubrey/ultra-ultra/overlay/studio-ultra-lane.sh</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>15</integer>
+  <key>WorkingDirectory</key><string>/Users/aubrey/ultra-ultra</string>
+  <key>StandardOutPath</key><string>/Users/aubrey/llm/logs/svc-ultra-lane.launchd.log</string>
+  <key>StandardErrorPath</key><string>/Users/aubrey/llm/logs/svc-ultra-lane.launchd.log</string>
+  <key>EnvironmentVariables</key>
+  <dict><key>HOME</key><string>/Users/aubrey</string><key>PATH</key><string>/Users/aubrey/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string></dict>
+</dict>
+</plist>

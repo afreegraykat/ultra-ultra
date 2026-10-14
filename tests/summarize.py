@@ -20,6 +20,14 @@ for tag, label in [("worker-c1-main-idle", "worker, main idle"), ("worker-c4-mai
     if r: print(f"| {label} | {r['conc']} | {g(tag,'per_stream_decode_tps_mean')} | {g(tag,'aggregate_tps_e2e')} | {g(tag,'ttft_p50_s')} |")
 mf = (R / "memory-floor.txt").read_text().strip() if (R / "memory-floor.txt").exists() else ""
 if mf: print(f"\n{mf}\n")
+lc = R / "longctx.jsonl"
+if lc.exists():
+    print("### Long context (needle retrieval, greedy, thinking off)\n")
+    print("| scenario | prompt tokens | found | TTFT s |\n|---|---|---|---|")
+    for l in lc.read_text().splitlines():
+        if not l.strip(): continue
+        j = json.loads(l); print(f"| {j['tag']} | {j['prompt_tokens_srv']} | {'yes' if j['found'] else 'NO'} | {j['ttft_s']} |")
+    print()
 print("### Hermes fan-out (one worker per file, sums scored against ground truth from each worker's own session)\n")
 print("| tasks | workers correct | main's final correct | subagent sessions | cross-routed | wall s |")
 print("|---|---|---|---|---|---|")
